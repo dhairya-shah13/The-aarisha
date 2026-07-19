@@ -144,7 +144,12 @@ async def supabase(method: str, table: str, *, params: dict | None = None, paylo
     async with httpx.AsyncClient(timeout=15) as client:
         response = await client.request(method, f"{settings.supabase_url.rstrip('/')}/rest/v1/{table}", headers=headers, params=params, json=payload)
     if response.is_error:
-        raise HTTPException(status_code=502, detail="Database operation failed")
+        try:
+            err_data = response.json()
+            err_msg = f"Database operation failed: {err_data.get('message', response.text)}"
+        except Exception:
+            err_msg = f"Database operation failed ({response.status_code}): {response.text}"
+        raise HTTPException(status_code=502, detail=err_msg)
     return response.json() if response.content else []
 
 
