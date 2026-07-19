@@ -3,6 +3,7 @@
    ═══════════════════════════════════════════ */
 
 document.addEventListener('DOMContentLoaded', () => {
+  const API_BASE_URL = 'http://127.0.0.1:8000';
   document.addEventListener('error', event => {
     const image = event.target;
     if (image.tagName === 'IMG' && !image.src.endsWith('/placeholder.svg')) image.src = 'placeholder.svg';
@@ -50,33 +51,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ── Generate Featured Product Cards ──
   const featuredScroll = document.getElementById('featuredScroll');
-  const productImages = [
-    { src: 'Earrings/WhatsApp Image 2026-04-18 at 3.00.49 PM (1).jpeg', name: 'Golden Drop Earrings' },
-    { src: 'Rings/WhatsApp Image 2026-04-18 at 3.01.10 PM.jpeg', name: 'Emerald Band Ring' },
-    { src: 'Bracelets/WhatsApp Image 2026-04-18 at 3.00.24 PM.jpeg', name: 'Pearl Chain Bracelet' },
-    { src: 'Earrings/WhatsApp Image 2026-04-18 at 3.00.50 PM.jpeg', name: 'Crystal Stud Set' },
-    { src: 'Rings/WhatsApp Image 2026-04-18 at 3.01.10 PM (1).jpeg', name: 'Vintage Rose Ring' },
-    { src: 'Bracelets/WhatsApp Image 2026-04-18 at 3.00.25 PM.jpeg', name: 'Gold Cuff Bracelet' },
-    { src: 'Earrings/WhatsApp Image 2026-04-18 at 3.00.51 PM.jpeg', name: 'Chandelier Drops' },
-    { src: 'Rings/WhatsApp Image 2026-04-18 at 3.01.11 PM (1).jpeg', name: 'Diamond Solitaire' },
-  ];
-  productImages.forEach(product => product.src = 'placeholder.svg');
-
   if (featuredScroll) {
-    productImages.forEach(p => {
+    fetch(`${API_BASE_URL}/products`)
+      .then(response => response.ok ? response.json() : [])
+      .then(products => products.forEach((product, index) => {
       const card = document.createElement('div');
       card.className = 'product-card reveal';
+      card.style.animationDelay = `${index * 80}ms`;
       card.innerHTML = `
-        <div class="product-card-img"><img src="${p.src}" alt="${p.name}"></div>
+        <div class="product-card-img"><img src="${product.image_url}" alt="${product.name}"></div>
         <div class="product-card-info">
-          <h4>${p.name}</h4>
-          <span class="price">₹ —</span>
+          <h4>${product.name}</h4>
+          <span class="price">₹ ${Number(product.price).toLocaleString('en-IN')}</span>
         </div>`;
       featuredScroll.appendChild(card);
-    });
-
-    // Re-observe new cards
-    featuredScroll.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+      revealObserver.observe(card);
+    }))
+      .catch(() => {});
 
     // Drag-to-scroll
     let isDown = false, startX, scrollLeft;
@@ -121,7 +112,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const modalBackBtn = document.getElementById('modalBackBtn');
   const modalTitle = document.getElementById('modalCategoryTitle');
   const modalGrid = document.getElementById('modalProductGrid');
-  const API_BASE_URL = 'http://127.0.0.1:8000';
   const CART_STORAGE_KEY = 'aarisha-cart-v1';
   const AUTH_STORAGE_KEY = 'aarisha-auth-token';
   const AUTH_USER_STORAGE_KEY = 'aarisha-auth-user';
@@ -274,56 +264,19 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   renderCart();
 
-  // Category product catalogs — maps each folder's images to product names & prices
-  const categoryData = {
-    Earrings: [
-      { src: 'Earrings/WhatsApp Image 2026-04-18 at 3.00.49 PM (1).jpeg', name: 'Golden Hoop Earrings', price: '₹ 1,299' },
-      { src: 'Earrings/WhatsApp Image 2026-04-18 at 3.00.49 PM.jpeg', name: 'Classic Drop Studs', price: '₹ 999' },
-      { src: 'Earrings/WhatsApp Image 2026-04-18 at 3.00.50 PM (1).jpeg', name: 'Pearl Dangle Earrings', price: '₹ 1,499' },
-      { src: 'Earrings/WhatsApp Image 2026-04-18 at 3.00.50 PM (2).jpeg', name: 'Emerald Chandelier Drops', price: '₹ 1,899' },
-      { src: 'Earrings/WhatsApp Image 2026-04-18 at 3.00.50 PM.jpeg', name: 'Crystal Stud Set', price: '₹ 799' },
-      { src: 'Earrings/WhatsApp Image 2026-04-18 at 3.00.51 PM (1).jpeg', name: 'Vintage Rose Danglers', price: '₹ 1,599' },
-      { src: 'Earrings/WhatsApp Image 2026-04-18 at 3.00.51 PM (2).jpeg', name: 'Floral Jhumka Earrings', price: '₹ 1,199' },
-      { src: 'Earrings/WhatsApp Image 2026-04-18 at 3.00.51 PM.jpeg', name: 'Minimalist Bar Studs', price: '₹ 699' },
-    ],
-    Rings: [
-      { src: 'Rings/WhatsApp Image 2026-04-18 at 3.01.10 PM (1).jpeg', name: 'Vintage Rose Ring', price: '₹ 1,099' },
-      { src: 'Rings/WhatsApp Image 2026-04-18 at 3.01.10 PM (2).jpeg', name: 'Dainty Stackable Band', price: '₹ 599' },
-      { src: 'Rings/WhatsApp Image 2026-04-18 at 3.01.10 PM.jpeg', name: 'Emerald Solitaire Ring', price: '₹ 1,799' },
-      { src: 'Rings/WhatsApp Image 2026-04-18 at 3.01.11 PM (1).jpeg', name: 'Diamond Twist Band', price: '₹ 2,199' },
-      { src: 'Rings/WhatsApp Image 2026-04-18 at 3.01.11 PM (2).jpeg', name: 'Pearl Statement Ring', price: '₹ 899' },
-      { src: 'Rings/WhatsApp Image 2026-04-18 at 3.01.11 PM.jpeg', name: 'Gold Signet Ring', price: '₹ 1,399' },
-    ],
-    Bracelets: [
-      { src: 'Bracelets/WhatsApp Image 2026-04-18 at 3.00.23 PM.jpeg', name: 'Charm Chain Bracelet', price: '₹ 1,499' },
-      { src: 'Bracelets/WhatsApp Image 2026-04-18 at 3.00.24 PM (1).jpeg', name: 'Pearl Cuff Bangle', price: '₹ 1,299' },
-      { src: 'Bracelets/WhatsApp Image 2026-04-18 at 3.00.24 PM (2).jpeg', name: 'Twisted Gold Bangle', price: '₹ 1,699' },
-      { src: 'Bracelets/WhatsApp Image 2026-04-18 at 3.00.24 PM.jpeg', name: 'Delicate Link Bracelet', price: '₹ 999' },
-      { src: 'Bracelets/WhatsApp Image 2026-04-18 at 3.00.25 PM (1).jpeg', name: 'Crystal Tennis Bracelet', price: '₹ 2,499' },
-      { src: 'Bracelets/WhatsApp Image 2026-04-18 at 3.00.25 PM (2).jpeg', name: 'Layered Chain Set', price: '₹ 1,899' },
-      { src: 'Bracelets/WhatsApp Image 2026-04-18 at 3.00.25 PM.jpeg', name: 'Emerald Stone Cuff', price: '₹ 1,599' },
-      { src: 'Bracelets/WhatsApp Image 2026-04-18 at 3.00.26 PM.jpeg', name: 'Minimalist Bar Bracelet', price: '₹ 799' },
-    ],
-    NeckPieces: []
-  };
-  Object.values(categoryData).flat().forEach(product => product.src = 'placeholder.svg');
-
   const displayNames = { Earrings: 'Earrings', Rings: 'Rings', Bracelets: 'Bracelets', NeckPieces: 'Neck Pieces' };
 
   async function openCollectionModal(category) {
-    let products = categoryData[category] || [];
+    let products = [];
     const title = displayNames[category] || category;
     modalTitle.textContent = title;
     modalGrid.innerHTML = '';
 
-    // The static catalogue keeps the existing site usable before the API is deployed.
     try {
       const response = await fetch(`${API_BASE_URL}/products/${apiCategories[category]}`);
-      if (response.ok) {
-        const remoteProducts = await response.json();
-        products = remoteProducts.map(product => ({ ...product, src: product.image_url, price: money(product.price) }));
-      }
-    } catch (_) { /* Offline/static fallback intentionally uses categoryData. */ }
+      if (!response.ok) throw new Error('Unable to load products.');
+      products = (await response.json()).map(product => ({ ...product, src: product.image_url, price: money(product.price) }));
+    } catch (_) {}
 
     if (products.length === 0) {
       modalGrid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:var(--gold);font-family:var(--font-heading);font-size:20px;font-style:italic;padding:60px 0;">Coming Soon — Stay Tuned</p>';
