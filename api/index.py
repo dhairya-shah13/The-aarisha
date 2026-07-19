@@ -14,6 +14,8 @@ def get_file_path(filename: str) -> str:
     return os.path.join(ROOT_DIR, filename)
 
 @app.get("/")
+@app.get("/index.html")
+@app.get("/index")
 async def read_index():
     return FileResponse(get_file_path("index.html"))
 
@@ -37,3 +39,7 @@ async def read_logo():
 @app.get("/placeholder.svg")
 async def read_placeholder():
     return FileResponse(get_file_path("placeholder.svg"))
+
+@app.get("/favicon.ico")
+async def read_favicon():
+    return FileResponse(get_file_path("Logo.png"))
