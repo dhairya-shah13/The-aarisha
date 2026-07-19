@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" role="img" aria-labelledby="title desc">
+  <title id="title">Product image unavailable</title>
+  <desc id="desc">A gold jewellery placeholder on a dark background</desc>
+  <rect width="800" height="1000" fill="#1d1b1a"/>
+  <circle cx="400" cy="420" r="154" fill="none" stroke="#c9a96e" stroke-width="10"/>
+  <path d="M400 210l38 82 90 11-66 62 18 89-80-44-80 44 18-89-66-62 90-11z" fill="#c9a96e"/>
+  <text x="400" y="690" fill="#c9a96e" font-family="Georgia, serif" font-size="32" letter-spacing="7" text-anchor="middle">AARISHA</text>
+  <text x="400" y="740" fill="#e8ddca" font-family="Arial, sans-serif" font-size="20" letter-spacing="3" text-anchor="middle">IMAGE COMING SOON</text>
+</svg>

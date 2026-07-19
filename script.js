@@ -3,63 +3,17 @@
    ═══════════════════════════════════════════ */
 
 document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener('error', event => {
+    const image = event.target;
+    if (image.tagName === 'IMG' && !image.src.endsWith('/placeholder.svg')) image.src = 'placeholder.svg';
+  }, true);
 
   // ── Custom Cursor ──
-  const cursor = document.getElementById('customCursor');
-  let cursorX = 0, cursorY = 0, targetX = 0, targetY = 0;
-
-  document.addEventListener('mousemove', (e) => {
-    targetX = e.clientX;
-    targetY = e.clientY;
-  });
-
-  function animateCursor() {
-    cursorX += (targetX - cursorX) * 0.15;
-    cursorY += (targetY - cursorY) * 0.15;
-    cursor.style.left = cursorX + 'px';
-    cursor.style.top = cursorY + 'px';
-    requestAnimationFrame(animateCursor);
-  }
-  animateCursor();
-
-  // Cursor hover effect on interactive elements
-  const hoverTargets = document.querySelectorAll('a, button, .collection-card, .product-card, input, textarea');
-  hoverTargets.forEach(el => {
-    el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
-    el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
-  });
-
-  // Hide cursor on touch devices
-  if ('ontouchstart' in window) {
-    cursor.style.display = 'none';
-    document.documentElement.style.cursor = 'auto';
-    document.body.style.cursor = 'auto';
-  }
-
   // ── Sticky Navigation ──
   const navbar = document.getElementById('navbar');
   window.addEventListener('scroll', () => {
     navbar.classList.toggle('scrolled', window.scrollY > 80);
   });
-
-  // ── Hamburger Menu ──
-  const hamburger = document.getElementById('hamburger');
-  const mobileMenu = document.getElementById('mobileMenu');
-
-  hamburger.addEventListener('click', () => {
-    hamburger.classList.toggle('active');
-    mobileMenu.classList.toggle('open');
-    document.body.style.overflow = mobileMenu.classList.contains('open') ? 'hidden' : '';
-  });
-
-  mobileMenu.querySelectorAll('a').forEach(link => {
-    link.addEventListener('click', () => {
-      hamburger.classList.remove('active');
-      mobileMenu.classList.remove('open');
-      document.body.style.overflow = '';
-    });
-  });
-
   // ── Parallax Hero ──
   const heroParallax = document.getElementById('heroParallax');
   window.addEventListener('scroll', () => {
@@ -106,6 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
     { src: 'Earrings/WhatsApp Image 2026-04-18 at 3.00.51 PM.jpeg', name: 'Chandelier Drops' },
     { src: 'Rings/WhatsApp Image 2026-04-18 at 3.01.11 PM (1).jpeg', name: 'Diamond Solitaire' },
   ];
+  productImages.forEach(product => product.src = 'placeholder.svg');
 
   if (featuredScroll) {
     productImages.forEach(p => {
@@ -122,12 +77,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Re-observe new cards
     featuredScroll.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
-
-    // Add hover for cursor
-    featuredScroll.querySelectorAll('.product-card').forEach(el => {
-      el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
-      el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
-    });
 
     // Drag-to-scroll
     let isDown = false, startX, scrollLeft;
@@ -155,6 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
     'Earrings/WhatsApp Image 2026-04-18 at 3.00.50 PM (1).jpeg',
     'Bracelets/WhatsApp Image 2026-04-18 at 3.00.25 PM (1).jpeg',
   ];
+  instaImages.fill('placeholder.svg');
 
   if (instaGrid) {
     instaImages.forEach(src => {
@@ -171,6 +121,158 @@ document.addEventListener('DOMContentLoaded', () => {
   const modalBackBtn = document.getElementById('modalBackBtn');
   const modalTitle = document.getElementById('modalCategoryTitle');
   const modalGrid = document.getElementById('modalProductGrid');
+  const API_BASE_URL = 'http://127.0.0.1:8000';
+  const CART_STORAGE_KEY = 'aarisha-cart-v1';
+  const AUTH_STORAGE_KEY = 'aarisha-auth-token';
+  const AUTH_USER_STORAGE_KEY = 'aarisha-auth-user';
+  const apiCategories = { Earrings: 'earrings', Rings: 'rings', Bracelets: 'bracelets', NeckPieces: 'necklaces' };
+  let cart = JSON.parse(localStorage.getItem(CART_STORAGE_KEY) || '[]');
+  let authMode = 'login';
+
+  const authDialog = document.getElementById('authDialog');
+  const authForm = document.getElementById('authForm');
+  const authTitle = document.getElementById('authTitle');
+  const authSubtitle = document.getElementById('authSubtitle');
+  const authStatus = document.getElementById('authStatus');
+  const authSubmit = authForm.querySelector('.auth-submit');
+  const authSwitch = document.getElementById('authSwitch');
+  const profileView = document.getElementById('profileView');
+  const profileEmail = document.getElementById('profileEmail');
+  const profileUsername = document.getElementById('profileUsername');
+  const authButtons = document.querySelectorAll('[data-auth-mode]');
+  const signupFields = authForm.querySelectorAll('.signup-field');
+
+  function setSignedIn(user) {
+    const initials = user.username.trim().split(/\s+/).map(part => part[0]).join('').slice(0, 2).toUpperCase();
+    authButtons.forEach(button => {
+      button.textContent = initials;
+      button.dataset.authMode = 'profile';
+      button.classList.add('profile-avatar');
+      button.setAttribute('aria-label', 'Open profile');
+    });
+    profileUsername.textContent = user.username;
+    profileEmail.textContent = user.email;
+  }
+
+  function openAuth(mode) {
+    authMode = mode;
+    profileView.hidden = true;
+    authForm.hidden = false;
+    const signingUp = mode === 'signup';
+    signupFields.forEach(field => {
+      field.hidden = !signingUp;
+      field.querySelector('input').disabled = !signingUp;
+      field.querySelector('input').required = signingUp;
+    });
+    authTitle.textContent = signingUp ? 'Create Account' : 'Welcome Back';
+    authSubtitle.textContent = signingUp ? 'Create an Aarisha account to keep shopping.' : 'Log in to your Aarisha account.';
+    authSubmit.textContent = signingUp ? 'Sign Up' : 'Login';
+    authSwitch.textContent = signingUp ? 'Already have an account? Login' : "Don't have an account? Sign Up";
+    authForm.password.autocomplete = signingUp ? 'new-password' : 'current-password';
+    authStatus.textContent = '';
+    if (!authDialog.open) authDialog.showModal();
+  }
+
+  function openProfile() {
+    authForm.hidden = true;
+    profileView.hidden = false;
+    if (!authDialog.open) authDialog.showModal();
+  }
+
+  authButtons.forEach(button => button.addEventListener('click', () => button.dataset.authMode === 'profile' ? openProfile() : openAuth(button.dataset.authMode)));
+  authDialog.querySelectorAll('.auth-close').forEach(button => button.addEventListener('click', () => authDialog.close()));
+  authSwitch.addEventListener('click', () => openAuth(authMode === 'login' ? 'signup' : 'login'));
+  document.getElementById('logoutButton').addEventListener('click', () => {
+    localStorage.removeItem(AUTH_STORAGE_KEY);
+    localStorage.removeItem(AUTH_USER_STORAGE_KEY);
+    authButtons.forEach(button => {
+      button.textContent = 'Login';
+      button.dataset.authMode = 'login';
+      button.classList.remove('profile-avatar');
+      button.removeAttribute('aria-label');
+    });
+    authDialog.close();
+  });
+  authForm.addEventListener('submit', async event => {
+    event.preventDefault();
+    authStatus.textContent = '';
+    if (authMode === 'signup' && authForm.password.value !== authForm.confirm_password.value) {
+      authStatus.textContent = 'Passwords do not match.';
+      return;
+    }
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/${authMode === 'signup' ? 'register' : 'login'}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(Object.fromEntries(new FormData(authForm))) });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.detail || 'Unable to continue.');
+      localStorage.setItem(AUTH_STORAGE_KEY, data.access_token);
+      if (data.is_admin) {
+        sessionStorage.setItem('aarisha-admin-token', data.access_token);
+        window.location.assign('admin.html');
+        return;
+      }
+      localStorage.setItem(AUTH_USER_STORAGE_KEY, JSON.stringify(data.user));
+      setSignedIn(data.user);
+      authDialog.close();
+    } catch (error) { authStatus.textContent = error.message; }
+  });
+  const savedUser = JSON.parse(localStorage.getItem(AUTH_USER_STORAGE_KEY) || 'null');
+  if (localStorage.getItem(AUTH_STORAGE_KEY) && savedUser) setSignedIn(savedUser);
+
+  const money = value => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 }).format(Number(value));
+  const priceNumber = value => typeof value === 'number' ? value : Number(String(value).replace(/[^0-9.]/g, '')) || 0;
+  const productKey = product => String(product.id || product.src || product.name);
+
+  function saveCart() {
+    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+    renderCart();
+  }
+
+  function addToCart(product) {
+    const normalized = { id: productKey(product), serverProductId: product.id || null, name: product.name, price: priceNumber(product.price), src: product.image_url || product.src };
+    const existing = cart.find(item => item.id === normalized.id);
+    existing ? existing.quantity += 1 : cart.push({ ...normalized, quantity: 1 });
+    saveCart();
+  }
+
+  function renderCart() {
+    const items = document.getElementById('cartItems');
+    const count = document.getElementById('cartCount');
+    const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    count.textContent = cart.reduce((sum, item) => sum + item.quantity, 0);
+    document.getElementById('cartTotal').textContent = money(total);
+    items.innerHTML = cart.length ? cart.map(item => `<article class="cart-item"><img src="${item.src}" alt="${item.name}"><div><h3>${item.name}</h3><p>${money(item.price)}</p><div class="cart-quantity"><button type="button" data-cart-action="decrease" data-id="${item.id}" aria-label="Decrease quantity">−</button><span>${item.quantity}</span><button type="button" data-cart-action="increase" data-id="${item.id}" aria-label="Increase quantity">+</button></div></div><button class="cart-remove" type="button" data-cart-action="remove" data-id="${item.id}" aria-label="Remove ${item.name}">&times;</button></article>`).join('') : '<p class="cart-empty">Your bag is waiting for a little sparkle.</p>';
+  }
+
+  function setCartOpen(open) {
+    document.getElementById('cartDrawer').classList.toggle('open', open);
+    document.getElementById('cartScrim').classList.toggle('open', open);
+    document.getElementById('cartDrawer').setAttribute('aria-hidden', String(!open));
+  }
+
+  document.getElementById('cartToggle').addEventListener('click', () => setCartOpen(true));
+  document.getElementById('cartClose').addEventListener('click', () => setCartOpen(false));
+  document.getElementById('cartScrim').addEventListener('click', () => setCartOpen(false));
+  document.getElementById('cartItems').addEventListener('click', event => {
+    const button = event.target.closest('[data-cart-action]');
+    if (!button) return;
+    const item = cart.find(entry => entry.id === button.dataset.id);
+    if (!item) return;
+    if (button.dataset.cartAction === 'increase') item.quantity += 1;
+    if (button.dataset.cartAction === 'decrease') item.quantity -= 1;
+    if (button.dataset.cartAction === 'remove' || item.quantity < 1) cart = cart.filter(entry => entry.id !== item.id);
+    saveCart();
+  });
+  document.getElementById('whatsappOrder').addEventListener('click', async () => {
+    if (!cart.length) return;
+    if (cart.some(item => !item.serverProductId)) return alert('Connect the catalogue API before ordering on WhatsApp.');
+    try {
+      const response = await fetch(`${API_BASE_URL}/orders/whatsapp-link`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ items: cart.map(item => ({ product_id: item.serverProductId, quantity: item.quantity })) }) });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.detail || 'Unable to create WhatsApp order link.');
+      window.open(data.url, '_blank', 'noopener');
+    } catch (error) { alert(error.message); }
+  });
+  renderCart();
 
   // Category product catalogs — maps each folder's images to product names & prices
   const categoryData = {
@@ -204,14 +306,24 @@ document.addEventListener('DOMContentLoaded', () => {
     ],
     NeckPieces: []
   };
+  Object.values(categoryData).flat().forEach(product => product.src = 'placeholder.svg');
 
   const displayNames = { Earrings: 'Earrings', Rings: 'Rings', Bracelets: 'Bracelets', NeckPieces: 'Neck Pieces' };
 
-  function openCollectionModal(category) {
-    const products = categoryData[category] || [];
+  async function openCollectionModal(category) {
+    let products = categoryData[category] || [];
     const title = displayNames[category] || category;
     modalTitle.textContent = title;
     modalGrid.innerHTML = '';
+
+    // The static catalogue keeps the existing site usable before the API is deployed.
+    try {
+      const response = await fetch(`${API_BASE_URL}/products/${apiCategories[category]}`);
+      if (response.ok) {
+        const remoteProducts = await response.json();
+        products = remoteProducts.map(product => ({ ...product, src: product.image_url, price: money(product.price) }));
+      }
+    } catch (_) { /* Offline/static fallback intentionally uses categoryData. */ }
 
     if (products.length === 0) {
       modalGrid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:var(--gold);font-family:var(--font-heading);font-size:20px;font-style:italic;padding:60px 0;">Coming Soon — Stay Tuned</p>';
@@ -226,11 +338,15 @@ document.addEventListener('DOMContentLoaded', () => {
             <h4>${p.name}</h4>
             <span class="price">${p.price}</span>
           </div>`;
+        const addButton = document.createElement('button');
+        addButton.className = 'add-to-cart';
+        addButton.type = 'button';
+        addButton.textContent = p.in_stock === false ? 'Out of Stock' : 'Add to Bag';
+        addButton.disabled = p.in_stock === false;
+        addButton.addEventListener('click', () => addToCart(p));
+        card.appendChild(addButton);
         modalGrid.appendChild(card);
 
-        // Cursor hover
-        card.addEventListener('mouseenter', () => cursor.classList.add('hover'));
-        card.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
       });
     }
 
