@@ -168,6 +168,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = await response.json();
       if (!response.ok) throw new Error(data.detail || 'Unable to create WhatsApp order link.');
       window.open(data.url, '_blank', 'noopener');
+      cart = [];
+      saveCart();
+      setCartOpen(false);
     } catch (error) { alert(error.message); }
   });
   renderCart();
