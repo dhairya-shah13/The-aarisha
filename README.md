@@ -16,7 +16,11 @@ Luxury accessories storefront with a vanilla-JS marketing site and a FastAPI/Sup
    uvicorn app.main:app --reload
    ```
 
-4. Serve the repository root with a static server. The frontend uses `http://127.0.0.1:8000` by default; change `API_BASE_URL` in `script.js` for deployment.
+4. Serve the repository root with a static server. The frontend uses `http://127.0.0.1:8000` locally.
+
+## Deploy to Vercel
+
+The repository includes a same-domain FastAPI function at `/api`. Add the values from `backend/.env` as Vercel Production environment variables (do not upload the `.env` file), then redeploy. The deployed storefront and admin page automatically use `/api`; local development continues to use `http://127.0.0.1:8000`.
 
 API documentation is available at `/docs` while the server is running.
 
