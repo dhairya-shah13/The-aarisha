@@ -55,10 +55,6 @@ class Credentials(BaseModel):
     password: str = Field(min_length=8, max_length=128)
 
 
-class Registration(Credentials):
-    username: str = Field(min_length=2, max_length=40, pattern=r"^[A-Za-z0-9_ .-]+$")
-    confirm_password: str = Field(min_length=8, max_length=128)
-
 
 class ProductInput(BaseModel):
     name: str = Field(min_length=1, max_length=120)
@@ -109,9 +105,6 @@ def token(subject: str, *, is_admin: bool = False, email: str, username: str) ->
     return {"access_token": value, "token_type": "bearer", "is_admin": is_admin, "user": {"email": email, "username": username}}
 
 
-def hash_password(password: str) -> str:
-    return bcrypt.hashpw(password.encode(), bcrypt.gensalt(rounds=12)).decode()
-
 
 def verify_password(password: str, password_hash: str) -> bool:
     return bcrypt.checkpw(password.encode(), password_hash.encode())
@@ -157,28 +150,6 @@ async def supabase(method: str, table: str, *, params: dict | None = None, paylo
 async def health():
     return {"status": "ok"}
 
-
-@app.post("/auth/register", status_code=status.HTTP_201_CREATED)
-async def register(credentials: Registration):
-    if credentials.password != credentials.confirm_password:
-        raise HTTPException(status_code=422, detail="Passwords do not match")
-    email, username = str(credentials.email).lower(), credentials.username.strip()
-    rows = await supabase("POST", "users", payload={"email": email, "username": username, "password_hash": hash_password(credentials.password)}, prefer="return=representation")
-    if not rows:
-        raise HTTPException(status_code=502, detail="Account could not be created")
-    return token(rows[0]["id"], email=email, username=username)
-
-
-@app.post("/auth/login")
-async def login(credentials: Credentials, request: Request):
-    limit_login(request)
-    email = str(credentials.email).lower()
-    if email == str(settings.admin_email).lower() and verify_password(credentials.password, settings.admin_password_hash):
-        return token(str(settings.admin_email), is_admin=True, email=str(settings.admin_email), username="Admin")
-    rows = await supabase("GET", "users", params={"email": f"eq.{email}", "select": "id,password_hash,username"})
-    if not rows or not verify_password(credentials.password, rows[0]["password_hash"]):
-        raise HTTPException(status_code=401, detail="Invalid email or password")
-    return token(rows[0]["id"], email=email, username=rows[0]["username"])
 
 
 @app.post("/admin/login")

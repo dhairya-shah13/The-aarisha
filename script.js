@@ -113,107 +113,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const modalTitle = document.getElementById('modalCategoryTitle');
   const modalGrid = document.getElementById('modalProductGrid');
   const CART_STORAGE_KEY = 'aarisha-cart-v1';
-  const AUTH_STORAGE_KEY = 'aarisha-auth-token';
-  const AUTH_USER_STORAGE_KEY = 'aarisha-auth-user';
   const apiCategories = { Earrings: 'earrings', Rings: 'rings', Bracelets: 'bracelets', NeckPieces: 'necklaces' };
-  let cart = JSON.parse(localStorage.getItem(CART_STORAGE_KEY) || '[]');
-  let authMode = 'login';
-
-  const authDialog = document.getElementById('authDialog');
-  const authForm = document.getElementById('authForm');
-  const authTitle = document.getElementById('authTitle');
-  const authSubtitle = document.getElementById('authSubtitle');
-  const authStatus = document.getElementById('authStatus');
-  const authSubmit = authForm.querySelector('.auth-submit');
-  const authSwitch = document.getElementById('authSwitch');
-  const profileView = document.getElementById('profileView');
-  const profileEmail = document.getElementById('profileEmail');
-  const profileUsername = document.getElementById('profileUsername');
-  const authButtons = document.querySelectorAll('[data-auth-mode]');
-  const signupFields = authForm.querySelectorAll('.signup-field');
-
-  function setSignedIn(user) {
-    const initials = user.username.trim().split(/\s+/).map(part => part[0]).join('').slice(0, 2).toUpperCase();
-    authButtons.forEach(button => {
-      button.textContent = initials;
-      button.dataset.authMode = 'profile';
-      button.classList.add('profile-avatar');
-      button.setAttribute('aria-label', 'Open profile');
-    });
-    profileUsername.textContent = user.username;
-    profileEmail.textContent = user.email;
-  }
-
-  function openAuth(mode) {
-    authMode = mode;
-    profileView.hidden = true;
-    authForm.hidden = false;
-    const signingUp = mode === 'signup';
-    signupFields.forEach(field => {
-      field.hidden = !signingUp;
-      field.querySelector('input').disabled = !signingUp;
-      field.querySelector('input').required = signingUp;
-    });
-    authTitle.textContent = signingUp ? 'Create Account' : 'Welcome Back';
-    authSubtitle.textContent = signingUp ? 'Create an Aarisha account to keep shopping.' : 'Log in to your Aarisha account.';
-    authSubmit.textContent = signingUp ? 'Sign Up' : 'Login';
-    authSwitch.textContent = signingUp ? 'Already have an account? Login' : "Don't have an account? Sign Up";
-    authForm.password.autocomplete = signingUp ? 'new-password' : 'current-password';
-    authStatus.textContent = '';
-    if (!authDialog.open) authDialog.showModal();
-  }
-
-  function openProfile() {
-    authForm.hidden = true;
-    profileView.hidden = false;
-    if (!authDialog.open) authDialog.showModal();
-  }
-
-  authButtons.forEach(button => button.addEventListener('click', () => button.dataset.authMode === 'profile' ? openProfile() : openAuth(button.dataset.authMode)));
-  authDialog.querySelectorAll('.auth-close').forEach(button => button.addEventListener('click', () => authDialog.close()));
-  authSwitch.addEventListener('click', () => openAuth(authMode === 'login' ? 'signup' : 'login'));
-  document.getElementById('logoutButton').addEventListener('click', () => {
-    localStorage.removeItem(AUTH_STORAGE_KEY);
-    localStorage.removeItem(AUTH_USER_STORAGE_KEY);
-    authButtons.forEach(button => {
-      button.textContent = 'Login';
-      button.dataset.authMode = 'login';
-      button.classList.remove('profile-avatar');
-      button.removeAttribute('aria-label');
-    });
-    authDialog.close();
-  });
-  authForm.addEventListener('submit', async event => {
-    event.preventDefault();
-    authStatus.textContent = '';
-    if (authMode === 'signup' && authForm.password.value !== authForm.confirm_password.value) {
-      authStatus.textContent = 'Passwords do not match.';
-      return;
-    }
-    try {
-      const response = await fetch(`${API_BASE_URL}/auth/${authMode === 'signup' ? 'register' : 'login'}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(Object.fromEntries(new FormData(authForm))) });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.detail || 'Unable to continue.');
-      localStorage.setItem(AUTH_STORAGE_KEY, data.access_token);
-      if (data.is_admin) {
-        sessionStorage.setItem('aarisha-admin-token', data.access_token);
-        window.location.assign('admin.html');
-        return;
-      }
-      localStorage.setItem(AUTH_USER_STORAGE_KEY, JSON.stringify(data.user));
-      setSignedIn(data.user);
-      authDialog.close();
-    } catch (error) { authStatus.textContent = error.message; }
-  });
-  const savedUser = JSON.parse(localStorage.getItem(AUTH_USER_STORAGE_KEY) || 'null');
-  if (localStorage.getItem(AUTH_STORAGE_KEY) && savedUser) setSignedIn(savedUser);
+  let cart = JSON.parse(sessionStorage.getItem(CART_STORAGE_KEY) || '[]');
 
   const money = value => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 }).format(Number(value));
   const priceNumber = value => typeof value === 'number' ? value : Number(String(value).replace(/[^0-9.]/g, '')) || 0;
   const productKey = product => String(product.id || product.src || product.name);
 
   function saveCart() {
-    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+    sessionStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
     renderCart();
   }
 
