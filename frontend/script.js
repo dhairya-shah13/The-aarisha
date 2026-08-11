@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════
-   AARISHA — Main JavaScript
+   AARISHA — Main JavaScript (v3 "Heritage Gold & Forest")
    ═══════════════════════════════════════════ */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -9,20 +9,64 @@ document.addEventListener('DOMContentLoaded', () => {
     if (image.tagName === 'IMG' && !image.src.endsWith('/placeholder.svg')) image.src = 'placeholder.svg';
   }, true);
 
-  // ── Custom Cursor ──
   // ── Sticky Navigation ──
   const navbar = document.getElementById('navbar');
   window.addEventListener('scroll', () => {
     navbar.classList.toggle('scrolled', window.scrollY > 80);
   });
-  // ── Parallax Hero ──
-  const heroParallax = document.getElementById('heroParallax');
-  window.addEventListener('scroll', () => {
-    if (heroParallax) {
-      const offset = window.scrollY * 0.4;
-      heroParallax.style.transform = `translateY(${offset}px)`;
-    }
-  });
+
+  // ═══════════════════════════════════════════
+  // RANI KI VAV HERITAGE BACKDROP (DESIGN.md §Motif)
+  // One fixed full-screen monument line-art layer with a cursor-reactive line glow
+  // (pointer devices) or ambient pulse (touch/keyboard). Purely decorative:
+  // aria-hidden + pointer-events:none in the markup/CSS; nothing here blocks input.
+  // ═══════════════════════════════════════════
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  const glowLayers = document.querySelectorAll('.heritage-bg[data-glow]');
+
+  if (reduceMotion) {
+    // Reduced motion: no tracking, no pulse — the motif renders at a fixed raised
+    // opacity via the prefers-reduced-motion CSS block.
+  } else if (finePointer) {
+    // Cursor line-glow — a masked copy of the artwork brightens within ~240px of
+    // the pointer. The glow copy carries a drop-shadow filter so the LINES
+    // themselves emit light (not a radial light source). Position updates are
+    // rAF-batched; the glow fades via CSS opacity. The layer is fixed full-screen,
+    // so listeners live on document, not per-section.
+    glowLayers.forEach(layer => {
+      let rafId = null;
+      const onMove = event => {
+        if (rafId) return;
+        rafId = requestAnimationFrame(() => {
+          rafId = null;
+          const rect = layer.getBoundingClientRect();
+          if (rect.width === 0 || rect.height === 0) return;
+          const x = ((event.clientX - rect.left) / rect.width) * 100;
+          const y = ((event.clientY - rect.top) / rect.height) * 100;
+          layer.style.setProperty('--glow-x', `${x.toFixed(2)}%`);
+          layer.style.setProperty('--glow-y', `${y.toFixed(2)}%`);
+          layer.classList.add('glowing');
+        });
+      };
+      const onLeave = () => layer.classList.remove('glowing');
+      document.addEventListener('mousemove', onMove, { passive: true });
+      document.addEventListener('mouseleave', onLeave);
+    });
+  } else {
+    // Touch devices get the slow ambient pulse instead of the cursor glow.
+    glowLayers.forEach(layer => layer.classList.add('pulse'));
+  }
+
+  // Keyboard users get the ambient pulse once they start tabbing — regardless of
+  // pointer type (a keyboard-only desktop user has hover:hover but no cursor).
+  if (!reduceMotion) {
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Tab' && glowLayers.length && !glowLayers[0].classList.contains('pulse')) {
+        glowLayers.forEach(layer => layer.classList.add('pulse'));
+      }
+    });
+  }
 
   // ── Intersection Observer — Reveal Animations ──
   const revealElements = document.querySelectorAll('.reveal, .reveal-left, .reveal-right');

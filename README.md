@@ -16,11 +16,11 @@ Luxury accessories storefront with a vanilla-JS marketing site and a FastAPI/Sup
    uvicorn app.main:app --reload
    ```
 
-4. Serve the repository root with a static server. The frontend uses `http://127.0.0.1:8000` locally.
+4. Serve the `frontend/` folder with a static server (e.g. `cd frontend && python -m http.server 5500`). The frontend uses `http://127.0.0.1:8000` locally.
 
 ## Deploy to Vercel
 
-The repository includes a same-domain FastAPI function at `/api`. Add the values from `backend/.env` as Vercel Production environment variables (do not upload the `.env` file), then redeploy. The deployed storefront and admin page automatically use `/api`; local development continues to use `http://127.0.0.1:8000`.
+The repository includes a same-domain FastAPI function at `/api`, and the static frontend lives in `frontend/` (served at the site root via `vercel.json` rewrites). Add the values from `backend/.env` as Vercel Production environment variables (do not upload the `.env` file), then redeploy. The deployed storefront and admin page automatically use `/api`; local development continues to use `http://127.0.0.1:8000`.
 
 API documentation is available at `/docs` while the server is running.
 
@@ -34,7 +34,7 @@ To create the admin hash after installing dependencies, run `python generate_pas
 - `POST /orders/whatsapp-link` creates a WhatsApp draft from current server-side product prices; it does not record an order.
 - `POST /admin/products`, `PATCH /admin/products/{id}`, and `DELETE /admin/products/{id}` require an admin bearer token.
 
-Open `admin.html` through the same static server to use the minimal product-management UI. Its API base URL is the same local default as the storefront and can be changed before deployment.
+Open `frontend/admin.html` through the same static server to use the minimal product-management UI. Its API base URL is the same local default as the storefront and can be changed before deployment.
 
 ## Security
 

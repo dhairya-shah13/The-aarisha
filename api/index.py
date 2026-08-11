@@ -9,9 +9,14 @@ app = FastAPI()
 app.mount("/api", catalogue_app)
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# Since the v3 "Heritage Gold & Forest" migration the static frontend lives in
+# frontend/ (index.html, styles.css, script.js, admin.html, Logo.png, placeholder.svg).
+# vercel.json rewrites non-API root paths to /frontend/*; these routes are the
+# FastAPI fallback for the same paths.
+FRONTEND_DIR = os.path.join(ROOT_DIR, "frontend")
 
 def get_file_path(filename: str) -> str:
-    return os.path.join(ROOT_DIR, filename)
+    return os.path.join(FRONTEND_DIR, filename)
 
 @app.get("/")
 @app.get("/index.html")

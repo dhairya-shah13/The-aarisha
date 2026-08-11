@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Aarisha Admin</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .admin-page { position:relative; min-height:100vh; padding:80px 40px; background:var(--forest-deep); }
+    .admin-panel { position:relative; max-width:1200px; margin:auto; padding:0; }
+    .admin-logout { position:absolute; top:12px; right:0; }
+    .admin-panel h1 { font:500 clamp(36px,6vw,56px) var(--font-heading); color:var(--gold-light); letter-spacing:3px; margin-bottom:10px; }
+    .admin-panel > p { color:rgba(255,255,255,.75); margin-bottom:28px; }
+    .admin-form { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+    .admin-form .full { grid-column:1/-1; }
+    .admin-form label { display:block; color:var(--gold); font-size:12px; letter-spacing:1px; text-transform:uppercase; margin-bottom:7px; }
+    .admin-form input, .admin-form select, .admin-form textarea { width:100%; padding:12px; color:var(--white); background:rgba(255,255,255,.06); border:1px solid rgba(201,162,75,.35); font:300 14px var(--font-body); }
+    .admin-actions { display:flex; gap:12px; margin-top:20px; }
+    .admin-products { margin-top:36px; display:grid; gap:0; }
+    .admin-product { display:grid; grid-template-columns:72px minmax(160px,1fr) 110px 90px 622px; gap:22px; align-items:center; padding:20px 0; border-bottom:1px solid rgba(201,162,75,.24); color:var(--white); }
+    .admin-product-head { padding-block:0 12px; border:0; color:var(--gold); font-size:12px; letter-spacing:1px; text-transform:uppercase; }
+    .admin-product-image { width:72px; height:72px; object-fit:cover; border:1px solid rgba(201,162,75,.35); }
+    .stock-status { font-size:20px; font-weight:600; } .stock-status.in { color:#72c779; } .stock-status.out { color:#e26a6a; }
+    .admin-product-actions { display:flex; flex-wrap:nowrap; gap:8px; }
+    .admin-product-actions .btn-send { padding:8px 10px; white-space:nowrap; }
+    .product-dialog { position:fixed; inset:0; width:min(760px, calc(100% - 32px)); max-height:calc(100vh - 32px); margin:auto; padding:32px; overflow:auto; border:1px solid var(--gold); background:var(--forest); color:var(--white); }
+    .product-dialog::backdrop { background:rgba(0,0,0,.62); }
+    .admin-product small, #adminStatus { color:var(--gold); } .hidden { display:none; }
+    @media (max-width:1250px) { .admin-page { padding:48px 24px; } .admin-product { grid-template-columns:64px minmax(120px,1fr) 90px 70px; gap:14px; } .admin-product-head span:last-child { display:none; } .admin-product-actions { grid-column:2 / -1; } }
+    @media (max-width:600px) { .admin-logout { position:static; margin-bottom:24px; } .admin-form { grid-template-columns:1fr; } .admin-product { grid-template-columns:64px 1fr; } .admin-product-head { display:none; } .admin-product-image { width:64px; height:64px; } .admin-product > :nth-child(n+3) { grid-column:2; } .admin-product-actions { flex-wrap:wrap; } }
+  </style>
+</head>
+<body>
+  <main class="admin-page">
+    <!-- Rani ki Vav motif sprite — symbols mirror assets/stepwell-motif.svg (full +
+         slim variants only; admin does not use the frieze). -->
+    <svg aria-hidden="true" style="display:none" xmlns="http://www.w3.org/2000/svg">
+      <symbol id="stepwell-motif" viewBox="0 0 1200 800">
+        <g stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none">
+          <path d="M180 570 L1020 570"/>
+          <path d="M210 600 L990 600"/>
+          <path d="M240 630 L960 630"/>
+          <path d="M270 660 L930 660"/>
+          <path d="M180 570 L210 600 L240 630 L270 660 L300 690"/>
+          <path d="M1020 570 L990 600 L960 630 L930 660 L900 690"/>
+          <circle cx="600" cy="726" r="42"/>
+          <circle cx="600" cy="726" r="18"/>
+          <path d="M300 690 L562 726"/>
+          <path d="M900 690 L638 726"/>
+          <path d="M540 748 L660 748"/>
+          <path d="M130 700 L1070 700"/>
+          <path d="M400 280 C 400 130 480 80 600 80 C 720 80 800 130 800 280"/>
+          <path d="M470 280 C 470 175 520 140 600 140 C 680 140 730 175 730 280"/>
+          <path d="M470 122 q26 26 52 0"/>
+          <path d="M678 122 q26 26 52 0"/>
+          <path d="M570 104 q30 26 60 0"/>
+          <path d="M400 280 L400 350"/>
+          <path d="M800 280 L800 350"/>
+          <path d="M470 280 L470 350"/>
+          <path d="M730 280 L730 350"/>
+          <path d="M320 300 C 320 200 340 165 360 155 C 380 165 400 200 400 300"/>
+          <path d="M335 300 C 335 220 350 195 360 188 C 370 195 385 220 385 300"/>
+          <path d="M800 300 C 800 200 820 165 840 155 C 860 165 880 200 880 300"/>
+          <path d="M815 300 C 815 220 830 195 840 188 C 850 195 865 220 865 300"/>
+          <path d="M320 300 L320 350"/>
+          <path d="M880 300 L880 350"/>
+          <path d="M320 350 L880 350"/>
+          <path d="M150 700 C 150 430 190 385 230 385 C 270 385 310 430 310 700"/>
+          <path d="M185 700 C 185 470 210 435 230 435 C 250 435 275 470 275 700"/>
+          <path d="M150 480 L310 480"/>
+          <path d="M150 480 L140 510"/>
+          <path d="M310 480 L320 510"/>
+          <path d="M890 700 C 890 430 930 385 970 385 C 1010 385 1050 430 1050 700"/>
+          <path d="M925 700 C 925 470 950 435 970 435 C 990 435 1015 470 1025 700"/>
+          <path d="M890 480 L1050 480"/>
+          <path d="M890 480 L880 510"/>
+          <path d="M1050 480 L1060 510"/>
+          <path d="M320 450 L880 450"/>
+          <path d="M340 450 q20 -30 40 0"/>
+          <path d="M400 450 q20 -30 40 0"/>
+          <path d="M460 450 q20 -30 40 0"/>
+          <path d="M520 450 q20 -30 40 0"/>
+          <path d="M580 450 q20 -30 40 0"/>
+          <path d="M640 450 q20 -30 40 0"/>
+          <path d="M700 450 q20 -30 40 0"/>
+          <path d="M760 450 q20 -30 40 0"/>
+          <path d="M820 450 q20 -30 40 0"/>
+          <path d="M328 520 q18 -26 36 0"/>
+          <path d="M400 520 q18 -26 36 0"/>
+          <path d="M472 520 q18 -26 36 0"/>
+          <path d="M544 520 q18 -26 36 0"/>
+          <path d="M616 520 q18 -26 36 0"/>
+          <path d="M688 520 q18 -26 36 0"/>
+          <path d="M760 520 q18 -26 36 0"/>
+          <path d="M832 520 q18 -26 36 0"/>
+          <path d="M95 60 L110 75 L95 90 L80 75 Z"/>
+          <path d="M125 60 L140 75 L125 90 L110 75 Z"/>
+          <path d="M80 90 L95 105 L80 120 L65 105 Z"/>
+          <path d="M110 90 L125 105 L110 120 L95 105 Z"/>
+          <path d="M1105 60 L1090 75 L1105 90 L1120 75 Z"/>
+          <path d="M1075 60 L1060 75 L1075 90 L1090 75 Z"/>
+          <path d="M1120 90 L1105 105 L1120 120 L1135 105 Z"/>
+          <path d="M1090 90 L1075 105 L1090 120 L1105 105 Z"/>
+        </g>
+      </symbol>
+      <symbol id="stepwell-motif-slim" viewBox="0 0 1200 800">
+        <g stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none">
+          <path d="M180 570 L1020 570"/>
+          <path d="M210 600 L990 600"/>
+          <path d="M240 630 L960 630"/>
+          <path d="M270 660 L930 660"/>
+          <path d="M180 570 L210 600 L240 630 L270 660 L300 690"/>
+          <path d="M1020 570 L990 600 L960 630 L930 660 L900 690"/>
+          <circle cx="600" cy="726" r="42"/>
+          <circle cx="600" cy="726" r="18"/>
+          <path d="M300 690 L562 726"/>
+          <path d="M900 690 L638 726"/>
+          <path d="M540 748 L660 748"/>
+          <path d="M130 700 L1070 700"/>
+          <path d="M400 280 C 400 130 480 80 600 80 C 720 80 800 130 800 280"/>
+          <path d="M470 280 C 470 175 520 140 600 140 C 680 140 730 175 730 280"/>
+          <path d="M470 122 q26 26 52 0"/>
+          <path d="M678 122 q26 26 52 0"/>
+          <path d="M570 104 q30 26 60 0"/>
+          <path d="M400 280 L400 350"/>
+          <path d="M800 280 L800 350"/>
+          <path d="M470 280 L470 350"/>
+          <path d="M730 280 L730 350"/>
+          <path d="M320 300 C 320 200 340 165 360 155 C 380 165 400 200 400 300"/>
+          <path d="M335 300 C 335 220 350 195 360 188 C 370 195 385 220 385 300"/>
+          <path d="M800 300 C 800 200 820 165 840 155 C 860 165 880 200 880 300"/>
+          <path d="M815 300 C 815 220 830 195 840 188 C 850 195 865 220 865 300"/>
+          <path d="M320 300 L320 350"/>
+          <path d="M880 300 L880 350"/>
+          <path d="M320 350 L880 350"/>
+          <path d="M150 700 C 150 430 190 385 230 385 C 270 385 310 430 310 700"/>
+          <path d="M185 700 C 185 470 210 435 230 435 C 250 435 275 470 275 700"/>
+          <path d="M150 480 L310 480"/>
+          <path d="M150 480 L140 510"/>
+          <path d="M310 480 L320 510"/>
+          <path d="M890 700 C 890 430 930 385 970 385 C 1010 385 1050 430 1050 700"/>
+          <path d="M925 700 C 925 470 950 435 970 435 C 990 435 1015 470 1025 700"/>
+          <path d="M890 480 L1050 480"/>
+          <path d="M890 480 L880 510"/>
+          <path d="M1050 480 L1060 510"/>
+          <path d="M320 450 L880 450"/>
+          <path d="M340 450 q20 -30 40 0"/>
+          <path d="M400 450 q20 -30 40 0"/>
+          <path d="M460 450 q20 -30 40 0"/>
+          <path d="M520 450 q20 -30 40 0"/>
+          <path d="M580 450 q20 -30 40 0"/>
+          <path d="M640 450 q20 -30 40 0"/>
+          <path d="M700 450 q20 -30 40 0"/>
+          <path d="M760 450 q20 -30 40 0"/>
+          <path d="M820 450 q20 -30 40 0"/>
+          <path d="M328 520 q18 -26 36 0"/>
+          <path d="M400 520 q18 -26 36 0"/>
+          <path d="M472 520 q18 -26 36 0"/>
+          <path d="M544 520 q18 -26 36 0"/>
+          <path d="M616 520 q18 -26 36 0"/>
+          <path d="M688 520 q18 -26 36 0"/>
+          <path d="M760 520 q18 -26 36 0"/>
+          <path d="M832 520 q18 -26 36 0"/>
+        </g>
+      </symbol>
+    </svg>
+    <div class="stepwell-bg" aria-hidden="true">
+      <svg class="stepwell-motif motif-base" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMax slice"><use class="u-full" href="#stepwell-motif"></use><use class="u-slim" href="#stepwell-motif-slim"></use></svg>
+    </div>
+    <section class="admin-panel">
+      <h1>Aarisha Admin</h1><p>Manage the public product catalogue. Admin credentials stay on the API server.</p><button class="btn-send admin-logout" id="adminLogout" type="button">Logout</button>
+      <div style="display:flex;gap:12px;align-items:center;margin-bottom:28px;flex-wrap:wrap" id="adminToolbar" hidden>
+        <button class="btn-send" id="addProduct" type="button">Add Product</button>
+        <button class="btn-send" id="deduplicateBtn" type="button" style="background:rgba(201,162,75,.12);border-color:rgba(201,162,75,.45)">Remove duplicates</button>
+      </div>
+      <form id="adminLogin" class="admin-form">
+        <div><label>Email <input id="email" type="email" required autocomplete="username"></label></div>
+        <div><label>Password <input id="password" type="password" required autocomplete="current-password"></label></div>
+        <div class="full"><button class="btn-send" type="submit">Sign in</button></div>
+      </form>
+      <dialog class="product-dialog" id="productDialog"><form id="productForm" class="admin-form">
+        <div><label>Name <input name="name" required></label></div><div><label>Price (INR) <input name="price" type="number" step="0.01" min="0.01" required></label></div>
+        <div><label>Category <select name="category"><option value="rings">Rings</option><option value="necklaces">Necklaces</option><option value="bracelets">Bracelets</option><option value="earrings">Earrings</option></select></label></div>
+        <div><label>In stock <select name="in_stock"><option value="true">Yes</option><option value="false">No</option></select></label></div>
+        <div class="full"><label>Google Drive or image URL <input name="image_url" type="url" required></label></div>
+        <div class="full"><label>Description <textarea name="description"></textarea></label></div>
+        <div class="full admin-actions"><button class="btn-send" type="submit">Save product</button><button class="btn-send" id="cancelEdit" type="button">Cancel edit</button></div>
+      </form></dialog>
+      <p id="adminStatus" role="status"></p><div id="adminProducts" class="admin-products"></div>
+    </section>
+  </main>
+  <script>
+    const API = ['127.0.0.1', 'localhost'].includes(location.hostname) ? 'http://127.0.0.1:8000' : `${location.origin}/api`; let token = sessionStorage.getItem('aarisha-admin-token'); let editingId = null;
+    const status = message => document.getElementById('adminStatus').textContent = message;
+    const headers = () => ({ 'Content-Type':'application/json', Authorization:`Bearer ${token}` });
+    const submitBtn = () => document.querySelector('#productForm button[type="submit"]');
+    async function request(path, options = {}) { const response = await fetch(API + path, options); if (!response.ok) throw new Error((await response.json().catch(() => ({}))).detail || 'Request failed'); return response.status === 204 ? null : response.json(); }
+    function showAdmin() { document.getElementById('adminLogin').classList.add('hidden'); document.getElementById('adminToolbar').hidden = false; loadProducts(); }
+    function showProductForm(product = null) { editingId = product?.id || null; productForm.reset(); if (product) Object.entries(product).forEach(([key, value]) => { if (productForm.elements[key]) productForm.elements[key].value = value; }); document.getElementById('productDialog').showModal(); }
+    const escapeHtml = value => String(value).replace(/[&<>'"]/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));
+    async function loadProducts() { try { const products = await request('/products'); const list = document.getElementById('adminProducts'); const header = '<div class="admin-product admin-product-head"><span>Image</span><span>Product name</span><span>Price</span><span>In stock</span><span>Actions</span></div>'; const rows = products.map(p => `<article class="admin-product"><img class="admin-product-image" src="${escapeHtml(p.image_url)}" alt=""><strong>${escapeHtml(p.name)}</strong><span>₹${Number(p.price).toFixed(2)}</span><span class="stock-status ${p.in_stock ? 'in' : 'out'}" aria-label="${p.in_stock ? 'In stock' : 'Out of stock'}">${p.in_stock ? '✓' : '✕'}</span><span class="admin-product-actions"><button class="btn-send" data-edit="${p.id}">Edit product</button><button class="btn-send" data-delete="${p.id}">Delete product</button><button class="btn-send" data-stock="${p.id}">${p.in_stock ? 'Set out of stock' : 'Set in stock'}</button></span></article>`).join(''); list.innerHTML = products.length ? header + rows : '<p>No products yet. Add your first product.</p>'; window.products = products; } catch (error) { status(error.message); } }
+    document.getElementById('adminLogin').addEventListener('submit', async event => { event.preventDefault(); try { const data = {email: email.value, password: password.value}; token = (await request('/admin/login', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)})).access_token; sessionStorage.setItem('aarisha-admin-token', token); showAdmin(); } catch (error) { status(error.message); } });
+    document.getElementById('addProduct').addEventListener('click', () => showProductForm());
+    document.getElementById('productDialog').addEventListener('close', () => { editingId = null; productForm.reset(); });
+    document.getElementById('productForm').addEventListener('submit', async event => { event.preventDefault(); const btn = submitBtn(); if (btn.disabled) return; btn.disabled = true; const data = Object.fromEntries(new FormData(event.target)); data.price = Number(data.price); data.in_stock = data.in_stock === 'true'; if (!data.description) delete data.description; try { await request(editingId ? `/admin/products/${editingId}` : '/admin/products', {method: editingId ? 'PATCH' : 'POST', headers: headers(), body: JSON.stringify(data)}); event.target.reset(); editingId = null; document.getElementById('productDialog').close(); status('Product saved.'); loadProducts(); } catch (error) { status(error.message); } finally { btn.disabled = false; } });
+    document.getElementById('cancelEdit').addEventListener('click', () => { editingId = null; productForm.reset(); document.getElementById('productDialog').close(); });
+    document.getElementById('deduplicateBtn').addEventListener('click', async () => { if (!confirm('Remove duplicate products? This keeps only the newest version of each product name in each category.')) return; const btn = document.getElementById('deduplicateBtn'); btn.disabled = true; try { const result = await request('/admin/products/deduplicate', {method:'POST', headers:headers()}); status(result.deleted ? `Removed ${result.deleted} duplicate product${result.deleted === 1 ? '' : 's'}.` : 'No duplicates found.'); loadProducts(); } catch (error) { status(error.message); } finally { btn.disabled = false; } });
+    document.getElementById('adminLogout').addEventListener('click', () => { sessionStorage.removeItem('aarisha-admin-token'); localStorage.removeItem('aarisha-auth-token'); localStorage.removeItem('aarisha-auth-user'); window.location.replace('index.html'); });
+    document.getElementById('adminProducts').addEventListener('click', async event => { const id = event.target.dataset.edit || event.target.dataset.delete || event.target.dataset.stock; if (!id) return; const product = window.products.find(p => p.id === id); if (event.target.dataset.edit) return showProductForm(product); if (event.target.dataset.stock) { try { await request(`/admin/products/${id}`, {method:'PATCH', headers:headers(), body:JSON.stringify({in_stock: !product.in_stock})}); loadProducts(); } catch (error) { status(error.message); } return; } if (confirm('Delete this product?')) { try { await request(`/admin/products/${id}`, {method:'DELETE', headers:headers()}); loadProducts(); } catch (error) { status(error.message); } } });
+    if (token) showAdmin(); else window.location.replace('index.html');
+  </script>
+</body>
+</html>

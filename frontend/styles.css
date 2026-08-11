@@ -1,0 +1,1482 @@
+/* ═══════════════════════════════════════════
+   AARISHA — Reflecting Beauty, Inside & Out
+   CSS Design System — v3 "Heritage Gold & Forest"
+   (see DESIGN.md — migrated from the Stitch export)
+   ═══════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Manrope:wght@200..800&display=swap');
+
+/* ── CSS Custom Properties ── */
+:root {
+  /* Forest grounds (replace the v2 --olive-* set). Deep Forest Green #1B3428 is the
+     "infinite canvas"; the deepest tones anchor drawers, the modal, and the footer. */
+  --forest-deep: #00180e;      /* deepest ground — modal, cart drawer, footer */
+  --forest-dark: #0a2419;      /* surface-container — marquee/alt surfaces */
+  --forest-darker: #062015;    /* surface-container-low */
+  --forest: #1b3428;           /* primary-container — main page ground */
+  --forest-high: #162f23;      /* surface-container-high — image wells */
+  --forest-highest: #213a2e;   /* surface-container-highest — hover wells */
+
+  /* Antique gold accent — the "architectural layer" (borders, icons, linework) */
+  --gold: #c9a24b;
+  --gold-light: #ebc166;
+  --gold-pale: #f1e6d3;
+  --gold-dark: #8a6a1f;        /* deep gold for text on ivory (WCAG AA) */
+
+  /* Ivory grounds — "tactile plaques" atop the forest canvas */
+  --white: #cce9d8;            /* on-surface — primary text */
+  --off-white: #ece1ce;        /* secondary-fixed — card/plaque surface */
+  --ink: #1c352a;              /* inverse-on-surface — dark text on ivory */
+
+  --font-heading: 'Bodoni Moda', 'Cormorant Garamond', Georgia, serif;
+  --font-body: 'Manrope', 'Jost', 'Raleway', Helvetica, sans-serif;
+
+  --transition-smooth: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --transition-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --transition-glow: cubic-bezier(0.4, 0, 0.2, 1);   /* glow brighten/fade */
+}
+
+/* ── Reset & Base ── */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+  width: 100%;
+  overscroll-behavior-x: none;
+  position: relative;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--white);
+  background: var(--forest);
+  width: 100%;
+  max-width: 100vw;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+button {
+  font-family: inherit;
+}
+
+:focus-visible {
+  outline: 1px solid var(--gold-light);
+  outline-offset: 3px;
+}
+
+/* ═══════════════════════════════════════════
+   THE RANI KI VAV HERITAGE BACKDROP (DESIGN.md §Motif)
+   One fixed full-screen forest ground carrying the gold monument line-art. The
+   base copy rests at low opacity; the glow copy is drop-shadowed so the LINES
+   themselves emit light and is masked to a window around the cursor
+   (--glow-x / --glow-y set by script.js). Touch/keyboard devices get an ambient
+   pulse instead. Purely decorative: aria-hidden + pointer-events:none.
+   ═══════════════════════════════════════════ */
+.heritage-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  color: var(--gold);          /* gold linework on forest */
+}
+
+/* Soft edge vignette — keeps the centre of the "gallery" brighter */
+.heritage-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 85% 75% at 50% 38%, transparent 0%, rgba(0, 24, 14, 0.55) 100%);
+  pointer-events: none;
+}
+
+.heritage-bg .motif {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Rest-state copy (low opacity) */
+.heritage-bg .motif-base {
+  opacity: var(--rest-op, 0.07);
+}
+
+/* Glow copy: identical artwork with a drop-shadow so every line carries its own
+   halo ("lines glow, not a radial light source"), masked to the cursor window.
+   Mask-position updates stay compositor-friendly (opacity + gradient position). */
+.heritage-bg .motif-glow {
+  opacity: 0;
+  transition: opacity 0.25s var(--transition-glow);
+  filter: drop-shadow(0 0 9px rgba(235, 193, 102, 0.85)) drop-shadow(0 0 3px rgba(235, 193, 102, 0.9));
+  -webkit-mask-image: radial-gradient(circle 240px at var(--glow-x, 50%) var(--glow-y, 50%), #000 0%, rgba(0, 0, 0, 0.9) 40%, transparent 74%);
+  mask-image: radial-gradient(circle 240px at var(--glow-x, 50%) var(--glow-y, 50%), #000 0%, rgba(0, 0, 0, 0.9) 40%, transparent 74%);
+}
+
+.heritage-bg.glowing .motif-glow {
+  opacity: 0.9;
+}
+
+/* Ambient pulse — touch/keyboard fallback: slow breathing between rest and
+   rest+0.12, applied to the base copy. */
+@keyframes heritage-pulse {
+  0%, 100% { opacity: var(--rest-op, 0.07); }
+  50%      { opacity: calc(var(--rest-op, 0.07) + 0.12); }
+}
+
+.heritage-bg.pulse .motif-base {
+  animation: heritage-pulse 9s ease-in-out infinite;
+}
+
+/* Static variant used by the admin page (frontend/admin.html): an absolute,
+   non-interactive motif layer behind the panel — no cursor glow, no pulse. */
+.stepwell-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  color: var(--gold);
+}
+
+.stepwell-bg .stepwell-motif {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: var(--rest-op, 0.05);
+}
+
+/* ≤768px: the full composition drops the corner lattice (slim variant) */
+.u-full { display: block; }
+.u-slim { display: none; }
+
+/* Content rides above the fixed backdrop */
+main,
+.footer {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Scroll Animations ── */
+.reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.8s var(--transition-smooth),
+              transform 0.8s var(--transition-smooth);
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.reveal-left {
+  opacity: 0;
+  transform: translateX(-60px);
+  transition: opacity 0.8s var(--transition-smooth),
+              transform 0.8s var(--transition-smooth);
+}
+
+.reveal-left.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.reveal-right {
+  opacity: 0;
+  transform: translateX(60px);
+  transition: opacity 0.8s var(--transition-smooth),
+              transform 0.8s var(--transition-smooth);
+}
+
+.reveal-right.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* ── Navigation ── */
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding: 22px 80px;
+  border-bottom: 1px solid transparent;
+  transition: padding 0.4s var(--transition-smooth),
+              background 0.4s var(--transition-smooth),
+              border-color 0.4s;
+}
+
+.navbar.scrolled {
+  padding: 12px 80px;
+  background: rgba(0, 24, 14, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(201, 162, 75, 0.25);
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 36px;
+}
+
+.nav-links a {
+  font: 600 12px/1 var(--font-body);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--off-white);
+  transition: color 0.3s;
+}
+
+.nav-links a:hover {
+  color: var(--gold-light);
+}
+
+.nav-brand {
+  justify-self: center;
+  font-family: var(--font-heading);
+  font-size: 21px;
+  font-weight: 500;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--gold-light);
+  transition: color 0.3s;
+}
+
+.nav-brand:hover {
+  color: var(--gold-pale);
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  justify-self: end;
+}
+
+.nav-icon-btn {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  color: var(--gold-light);
+  cursor: pointer;
+  transition: color 0.3s,
+              border-color 0.3s,
+              box-shadow 0.3s var(--transition-glow);
+}
+
+.nav-icon-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.nav-icon-btn:hover,
+.nav-icon-btn:focus-visible {
+  color: var(--gold-pale);
+  border-color: rgba(201, 162, 75, 0.4);
+  box-shadow: 0 0 12px rgba(235, 193, 102, 0.25);
+}
+
+.cart-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  background: var(--gold);
+  color: var(--forest-deep);
+  border-radius: 50%;
+  font: 700 10px/17px var(--font-body);
+  text-align: center;
+  pointer-events: none;
+}
+
+/* ── Hero Section ── */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 130px 20px 70px;
+}
+
+.hero-content {
+  max-width: 900px;
+}
+
+/* Jharokha frame — the mirrored-arch motif as a hero mark */
+.jharokha-frame {
+  position: relative;
+  width: 172px;
+  height: 188px;
+  margin: 0 auto 40px;
+  color: var(--gold);
+}
+
+.jharokha-arch {
+  width: 100%;
+  height: 100%;
+  opacity: 0.9;
+  filter: drop-shadow(0 0 14px rgba(235, 193, 102, 0.35));
+}
+
+.hero-diamond {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 46px;
+  height: 46px;
+  color: var(--gold-light);
+  filter: drop-shadow(0 0 10px rgba(235, 193, 102, 0.55));
+}
+
+.hero-eyebrow {
+  font: 500 12px/1 var(--font-body);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 26px;
+}
+
+.hero-title {
+  font-family: var(--font-heading);
+  font-size: clamp(52px, 9vw, 88px);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;   /* brand wordmark per the Stitch design */
+  color: var(--white);
+  margin-bottom: 18px;
+}
+
+.hero-tagline {
+  font-family: var(--font-heading);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(16px, 2.4vw, 22px);
+  color: rgba(204, 233, 216, 0.8);
+  margin-bottom: 46px;
+}
+
+.btn-outline-gold {
+  display: inline-block;
+  font: 600 13px/1 var(--font-body);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--gold);
+  border: 1px solid var(--gold);
+  background: transparent;
+  padding: 17px 44px;
+  transition: color 0.3s var(--transition-smooth),
+              background 0.3s var(--transition-smooth),
+              box-shadow 0.3s var(--transition-glow),
+              border-color 0.3s;
+}
+
+.btn-outline-gold:hover,
+.btn-outline-gold:focus-visible {
+  background: var(--gold);
+  color: var(--forest-deep);
+  border-color: var(--gold-light);
+  box-shadow: 0 0 18px rgba(235, 193, 102, 0.35);
+}
+
+/* ── Step-Well Divider (architectural section break) ── */
+.stepwell-divider {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 30px 0 80px;
+  opacity: 0.6;
+}
+
+.divider-line {
+  height: 1px;
+  background: var(--gold);
+}
+
+.divider-line.l1 { width: 288px; }
+.divider-line.l2 { width: 216px; }
+.divider-line.l3 { width: 144px; }
+
+/* ── Ornamental Divider ── */
+.ornamental-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 10px 0;
+}
+
+.ornamental-divider .line {
+  width: 80px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+
+.ornamental-divider .diamond {
+  width: 6px;
+  height: 6px;
+  background: var(--gold);
+  transform: rotate(45deg);
+}
+
+/* ── Section headings ── */
+.section-heading {
+  text-align: center;
+  font-family: var(--font-heading);
+  font-size: clamp(34px, 5vw, 48px);
+  font-weight: 500;
+  color: var(--gold-light);
+  letter-spacing: 0.04em;
+  margin-bottom: 64px;
+}
+
+/* ── Collections Grid ── */
+.collections-section {
+  padding: 10px 80px 110px;
+}
+
+.collections-grid {
+  max-width: 1240px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+
+.collection-card {
+  position: relative;
+  display: block;
+  padding: 8px;
+  background: var(--off-white);   /* ivory "plaque" ground */
+  cursor: pointer;
+  transition: transform 0.5s var(--transition-smooth);
+}
+
+.collection-card:hover,
+.collection-card:focus-visible {
+  transform: translateY(-8px);
+}
+
+/* Gold frame sitting 8px outside the ivory container ("framed artwork") */
+.collection-card-frame {
+  position: absolute;
+  inset: -8px;
+  border: 1px solid var(--gold);
+  opacity: 0.5;
+  transition: opacity 0.4s;
+  pointer-events: none;
+}
+
+.collection-card:hover .collection-card-frame {
+  opacity: 1;
+}
+
+.collection-card-img {
+  position: relative;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  background: var(--forest-high);
+}
+
+.collection-card-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.92;
+  transition: transform 0.7s var(--transition-smooth),
+              opacity 0.5s;
+}
+
+.collection-card:hover .collection-card-img img {
+  transform: scale(1.05);
+  opacity: 1;
+}
+
+.collection-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(6, 32, 21, 0.85) 0%, rgba(6, 32, 21, 0.25) 45%, transparent 100%);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 28px;
+}
+
+.collection-overlay h3 {
+  font-family: var(--font-heading);
+  font-size: clamp(22px, 2.6vw, 30px);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--gold-pale);
+  text-align: center;
+}
+
+/* ── Featured / Handpicked ── */
+.featured-section {
+  padding: 10px 0 110px;
+}
+
+.featured-scroll-wrapper {
+  position: relative;
+  overflow: hidden;
+  padding: 0 80px;
+}
+
+.featured-scroll {
+  display: flex;
+  gap: 24px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  padding: 4px 4px 24px;
+  scrollbar-width: none;
+}
+
+.featured-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.product-card {
+  flex: 0 0 268px;
+  scroll-snap-align: start;
+  background: var(--off-white);
+  border: 1px solid rgba(201, 162, 75, 0.28);
+  transition: transform 0.4s var(--transition-smooth),
+              border-color 0.4s,
+              box-shadow 0.3s var(--transition-glow);
+}
+
+.product-card:hover,
+.product-card:focus-within {
+  transform: translateY(-6px);
+  border-color: var(--gold);
+  box-shadow: 0 0 18px rgba(235, 193, 102, 0.22);
+}
+
+.product-card-img {
+  width: 100%;
+  aspect-ratio: 1;
+  background: linear-gradient(135deg, var(--forest), var(--forest-highest));
+  overflow: hidden;
+}
+
+.product-card-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.product-card-info {
+  padding: 20px;
+  text-align: center;
+}
+
+.product-card-info h4 {
+  font-family: var(--font-heading);
+  font-size: 19px;
+  font-weight: 500;
+  color: var(--ink);
+  letter-spacing: 0.03em;
+  margin-bottom: 6px;
+}
+
+/* Price in deep gold for WCAG contrast on the ivory panel (gold-on-ivory alone
+   is ≈2.4:1 — deliberate deviation, see context.md → UI/Motion) */
+.product-card-info .price {
+  font: 400 14px/1 var(--font-body);
+  color: var(--gold-dark);
+  letter-spacing: 0.05em;
+}
+
+/* ── About Section ── */
+.about-section {
+  padding: 110px 80px;
+}
+
+.about-grid {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 60px;
+  align-items: center;
+}
+
+.about-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.about-quote {
+  font-family: var(--font-heading);
+  font-style: italic;
+  font-size: 24px;
+  font-weight: 400;
+  color: rgba(204, 233, 216, 0.75);
+  line-height: 1.6;
+}
+
+.about-right h2 {
+  font-family: var(--font-heading);
+  font-size: clamp(30px, 4vw, 44px);
+  font-weight: 500;
+  color: var(--gold-light);
+  letter-spacing: 0.03em;
+  margin-bottom: 22px;
+}
+
+.about-right p {
+  font: 300 16px/1.9 var(--font-body);
+  color: rgba(204, 233, 216, 0.8);
+  letter-spacing: 0.02em;
+}
+
+/* ── Why Aarisha ── */
+.why-section {
+  padding: 10px 80px 110px;
+}
+
+.why-grid {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 40px;
+  text-align: center;
+}
+
+.why-item {
+  padding: 40px 20px;
+}
+
+.why-icon {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 24px;
+}
+
+.why-icon svg {
+  width: 100%;
+  height: 100%;
+  stroke: var(--gold);
+  fill: none;
+  stroke-width: 1;
+  filter: drop-shadow(0 0 6px rgba(235, 193, 102, 0.3));
+}
+
+.why-item h3 {
+  font-family: var(--font-heading);
+  font-size: 23px;
+  font-weight: 500;
+  color: var(--white);
+  letter-spacing: 0.05em;
+  margin-bottom: 14px;
+}
+
+.why-item p {
+  font: 300 15px/1.7 var(--font-body);
+  color: rgba(204, 233, 216, 0.7);
+}
+
+/* ── Instagram Section ── */
+.instagram-section {
+  padding: 10px 80px 110px;
+  text-align: center;
+}
+
+.insta-grid {
+  max-width: 1100px;
+  margin: 0 auto 44px;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+}
+
+.insta-placeholder {
+  aspect-ratio: 1;
+  background: linear-gradient(135deg, var(--forest-high), var(--forest-highest));
+  overflow: hidden;
+  border: 1px solid rgba(201, 162, 75, 0.22);
+  transition: border-color 0.3s,
+              box-shadow 0.3s var(--transition-glow);
+}
+
+.insta-placeholder:hover {
+  border-color: var(--gold);
+  box-shadow: 0 0 12px rgba(235, 193, 102, 0.2);
+}
+
+.insta-btn {
+  display: inline-block;
+  font: 600 12px/1 var(--font-body);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold);
+  border: 1px solid var(--gold);
+  background: transparent;
+  padding: 15px 34px;
+  transition: color 0.3s var(--transition-smooth),
+              background 0.3s var(--transition-smooth),
+              box-shadow 0.3s var(--transition-glow);
+}
+
+.insta-btn:hover,
+.insta-btn:focus-visible {
+  background: var(--gold);
+  color: var(--forest-deep);
+  box-shadow: 0 0 16px rgba(235, 193, 102, 0.35);
+}
+
+/* ── Contact Section ── */
+.contact-section {
+  padding: 10px 80px 110px;
+}
+
+.contact-wrapper {
+  max-width: 900px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 60px;
+}
+
+.contact-form {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+/* Inputs: single gold bottom border, label-sm style labels above (DESIGN.md §Inputs) */
+.form-group label {
+  display: block;
+  font: 500 11px/1 var(--font-body);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 10px;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--gold);
+  border-radius: 0;
+  color: var(--white);
+  font: 300 15px/1.6 var(--font-body);
+  padding: 10px 2px;
+  outline: none;
+  transition: border-color 0.3s,
+              box-shadow 0.3s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  border-bottom-color: var(--gold-light);
+  box-shadow: 0 1px 0 var(--gold-light);
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 110px;
+}
+
+.btn-send {
+  font: 600 12px/1 var(--font-body);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--gold);
+  border: 1px solid var(--gold);
+  background: transparent;
+  padding: 16px 40px;
+  align-self: flex-start;
+  transition: color 0.3s var(--transition-smooth),
+              background 0.3s var(--transition-smooth),
+              box-shadow 0.3s var(--transition-glow);
+}
+
+.btn-send:hover,
+.btn-send:focus-visible {
+  background: var(--gold);
+  color: var(--forest-deep);
+  box-shadow: 0 0 16px rgba(235, 193, 102, 0.35);
+}
+
+.contact-details h3 {
+  font-family: var(--font-heading);
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--white);
+  letter-spacing: 0.08em;
+  margin-bottom: 30px;
+}
+
+.contact-detail-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 20px;
+  color: var(--gold);
+}
+
+.contact-detail-item svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.contact-detail-item span {
+  font: 300 15px/1.6 var(--font-body);
+  color: rgba(204, 233, 216, 0.82);
+}
+
+/* ── Footer ── */
+.footer {
+  border-top: 1px solid rgba(201, 162, 75, 0.2);
+  padding: 0 80px 36px;
+  text-align: center;
+}
+
+.footer-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 44px 0;
+}
+
+.footer-divider-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(201, 162, 75, 0.5), transparent);
+}
+
+.footer-flare {
+  width: 20px;
+  height: 20px;
+  color: var(--gold);
+}
+
+.footer-grid {
+  max-width: 1240px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 48px;
+  text-align: left;
+  padding-bottom: 48px;
+}
+
+.footer-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.footer-brand img {
+  height: 46px;
+  width: auto;
+  object-fit: contain;
+}
+
+.footer-brand p {
+  font: 300 14px/1.7 var(--font-body);
+  color: rgba(204, 233, 216, 0.7);
+  max-width: 260px;
+}
+
+.footer-links {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.footer-links a {
+  font: 600 11px/1 var(--font-body);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(204, 233, 216, 0.7);
+  transition: color 0.3s;
+}
+
+.footer-links a:hover {
+  color: var(--gold-light);
+}
+
+.footer-contact {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.footer-contact a {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font: 400 14px/1 var(--font-body);
+  color: rgba(204, 233, 216, 0.7);
+  transition: color 0.3s;
+}
+
+.footer-contact a svg {
+  width: 16px;
+  height: 16px;
+  color: var(--gold);
+}
+
+.footer-contact a:hover {
+  color: var(--gold-light);
+}
+
+.footer-contact .footer-insta {
+  font-size: 13px;
+  letter-spacing: 0.05em;
+}
+
+.footer-socials {
+  display: flex;
+  justify-content: center;
+  gap: 22px;
+  padding-bottom: 26px;
+}
+
+.footer-socials a svg {
+  width: 20px;
+  height: 20px;
+  fill: var(--gold);
+  transition: fill 0.3s;
+}
+
+.footer-socials a:hover svg {
+  fill: var(--gold-light);
+}
+
+.footer-copy {
+  font: 500 10px/1 var(--font-body);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(204, 233, 216, 0.45);
+}
+
+/* ── Collection Detail Modal ── */
+.collection-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  background: var(--forest-deep);
+  overflow-y: auto;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(30px);
+  transition: opacity 0.5s var(--transition-smooth),
+              transform 0.5s var(--transition-smooth);
+}
+
+.collection-modal.open {
+  opacity: 1;
+  pointer-events: all;
+  transform: translateY(0);
+}
+
+.collection-modal-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 130px 60px 90px;
+}
+
+.collection-modal-header {
+  text-align: center;
+  margin-bottom: 50px;
+}
+
+.collection-modal-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+}
+
+.modal-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: none;
+  border: 1px solid rgba(201, 162, 75, 0.4);
+  color: var(--gold);
+  font: 600 12px/1 var(--font-body);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 11px 24px;
+  cursor: pointer;
+  transition: background 0.3s,
+              border-color 0.3s,
+              box-shadow 0.3s var(--transition-glow),
+              color 0.3s;
+}
+
+.modal-back-btn:hover,
+.modal-back-btn:focus-visible {
+  background: rgba(201, 162, 75, 0.12);
+  border-color: var(--gold);
+  box-shadow: 0 0 14px rgba(235, 193, 102, 0.25);
+}
+
+.modal-back-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.modal-category-title {
+  font-family: var(--font-heading);
+  font-size: clamp(34px, 5vw, 54px);
+  font-weight: 500;
+  color: var(--gold-light);
+  letter-spacing: 0.06em;
+  margin: 0;
+}
+
+.collection-modal-header .ornamental-divider {
+  margin-top: 16px;
+}
+
+.collection-modal-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28px;
+}
+
+.modal-product-card {
+  background: var(--off-white);
+  border: 1px solid rgba(201, 162, 75, 0.3);
+  transition: transform 0.4s var(--transition-smooth),
+              border-color 0.4s,
+              box-shadow 0.4s var(--transition-glow);
+  opacity: 0;
+  transform: translateY(30px);
+  animation: modalCardIn 0.5s var(--transition-smooth) forwards;
+}
+
+.modal-product-card:hover {
+  transform: translateY(-6px);
+  border-color: var(--gold);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.35),
+              0 0 16px rgba(235, 193, 102, 0.2);
+}
+
+.modal-product-card-img {
+  width: 100%;
+  aspect-ratio: 1;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--forest), var(--forest-highest));
+}
+
+.modal-product-card-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s var(--transition-smooth);
+}
+
+.modal-product-card:hover .modal-product-card-img img {
+  transform: scale(1.05);
+}
+
+.modal-product-card-info {
+  padding: 22px 20px 6px;
+  text-align: center;
+}
+
+.modal-product-card-info h4 {
+  font-family: var(--font-heading);
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--ink);
+  letter-spacing: 0.03em;
+  margin-bottom: 8px;
+}
+
+.modal-product-card-info .price {
+  font: 400 15px/1 var(--font-body);
+  color: var(--gold-dark);
+  letter-spacing: 0.04em;
+}
+
+@keyframes modalCardIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.add-to-cart {
+  display: block;
+  width: calc(100% - 40px);
+  margin: 16px 20px 20px;
+  padding: 12px;
+  background: var(--forest-deep);
+  border: 1px solid var(--gold);
+  color: var(--gold);
+  font: 600 11px/1 var(--font-body);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.3s var(--transition-smooth),
+              color 0.3s var(--transition-smooth),
+              box-shadow 0.3s var(--transition-glow);
+}
+
+.add-to-cart:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.add-to-cart:hover:not(:disabled) {
+  background: var(--gold);
+  color: var(--forest-deep);
+  box-shadow: 0 0 16px rgba(235, 193, 102, 0.35);
+}
+
+/* ── Cart Drawer ── */
+.cart-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 2999;
+  background: rgba(0, 0, 0, 0.55);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+
+.cart-drawer {
+  position: fixed;
+  z-index: 3000;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  width: min(420px, 100%);
+  display: flex;
+  flex-direction: column;
+  background: var(--forest-deep);
+  border-left: 1px solid var(--gold);
+  padding: 28px;
+  transform: translateX(100%);
+  transition: transform 0.35s var(--transition-smooth);
+}
+
+.cart-drawer.open {
+  transform: translateX(0);
+}
+
+.cart-scrim.open {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.cart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(201, 162, 75, 0.3);
+  padding-bottom: 18px;
+}
+
+.cart-header h2 {
+  color: var(--white);
+  font: 500 28px/1 var(--font-heading);
+  letter-spacing: 0.06em;
+}
+
+.cart-close {
+  background: none;
+  border: 0;
+  color: var(--gold);
+  font-size: 34px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.cart-items {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 0;
+}
+
+.cart-empty {
+  color: rgba(204, 233, 216, 0.7);
+  font-weight: 300;
+  padding: 30px 0;
+  text-align: center;
+}
+
+.cart-item {
+  display: grid;
+  grid-template-columns: 68px 1fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(201, 162, 75, 0.18);
+}
+
+.cart-item img {
+  height: 68px;
+  width: 68px;
+  object-fit: cover;
+  border: 1px solid rgba(201, 162, 75, 0.3);
+}
+
+.cart-item h3 {
+  color: var(--white);
+  font: 500 17px/1.3 var(--font-heading);
+}
+
+.cart-item p {
+  color: var(--gold);
+  font-size: 13px;
+  margin-top: 3px;
+}
+
+.cart-quantity {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.cart-quantity button,
+.cart-remove {
+  background: transparent;
+  border: 1px solid rgba(201, 162, 75, 0.45);
+  color: var(--gold);
+  min-width: 25px;
+  padding: 2px 6px;
+  cursor: pointer;
+}
+
+.cart-remove {
+  border: 0;
+  font-size: 18px;
+}
+
+.cart-footer {
+  border-top: 1px solid rgba(201, 162, 75, 0.3);
+  padding-top: 18px;
+}
+
+.cart-total {
+  display: flex;
+  justify-content: space-between;
+  color: var(--white);
+  margin-bottom: 18px;
+}
+
+.cart-total strong {
+  color: var(--gold-light);
+  font-weight: 500;
+}
+
+/* ═══════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════ */
+
+@media (max-width: 1200px) {
+  .navbar { padding: 18px 48px; }
+  .navbar.scrolled { padding: 12px 48px; }
+  .collections-section,
+  .why-section,
+  .instagram-section,
+  .contact-section { padding: 10px 48px 90px; }
+  .about-section { padding: 90px 48px; }
+  .featured-section { padding: 10px 0 90px; }
+  .featured-scroll-wrapper { padding: 0 48px; }
+  .footer { padding: 0 48px 32px; }
+}
+
+@media (max-width: 768px) {
+  .navbar { padding: 14px 24px; }
+  .navbar.scrolled { padding: 10px 24px; }
+  .nav-links { display: none; }
+  .nav-brand { letter-spacing: 0.22em; font-size: 18px; }
+
+  /* Full composition drops the corner lattice on narrow columns */
+  .u-full { display: none; }
+  .u-slim { display: block; }
+
+  .hero { padding: 110px 20px 60px; }
+
+  .stepwell-divider { padding: 20px 0 60px; }
+
+  .collections-section,
+  .why-section,
+  .instagram-section,
+  .contact-section { padding: 10px 24px 80px; }
+  .about-section { padding: 80px 24px; }
+  .featured-section { padding: 10px 0 80px; }
+  .featured-scroll-wrapper { padding: 0 24px; }
+  .product-card { flex: 0 0 240px; }
+
+  .collections-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+
+  .about-grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+    text-align: center;
+  }
+  .about-right { text-align: center; }
+
+  .why-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .insta-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .contact-wrapper {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+
+  .footer-grid {
+    grid-template-columns: 1fr;
+    gap: 36px;
+    text-align: center;
+  }
+  .footer-brand,
+  .footer-links,
+  .footer-contact {
+    align-items: center;
+  }
+  .footer-links { flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 18px 26px; }
+
+  .collection-modal-inner { padding: 96px 24px 56px; }
+  .collection-modal-title-row { gap: 16px; }
+  .modal-back-btn { padding: 9px 14px; letter-spacing: 0.08em; }
+  .collection-modal-grid { grid-template-columns: repeat(2, 1fr); gap: 20px; }
+
+  .section-heading { margin-bottom: 44px; }
+}
+
+@media (max-width: 600px) {
+  .navbar, .navbar.scrolled { padding-left: 16px; padding-right: 16px; }
+  .nav-brand { font-size: 16px; letter-spacing: 0.18em; }
+  .nav-actions { gap: 10px; }
+  .nav-icon-btn { width: 36px; height: 36px; }
+
+  .hero { min-height: 92vh; padding: 100px 16px 56px; }
+  .jharokha-frame { width: 140px; height: 154px; margin-bottom: 32px; }
+  .hero-title { font-size: clamp(44px, 12vw, 58px); }
+  .hero-tagline { letter-spacing: 0.02em; margin-bottom: 34px; }
+  .btn-outline-gold { padding: 15px 26px; letter-spacing: 0.12em; }
+
+  .section-heading { font-size: 32px; margin-bottom: 36px; }
+
+  .collections-section,
+  .why-section,
+  .instagram-section,
+  .contact-section { padding: 10px 16px 70px; }
+  .about-section { padding: 70px 16px; }
+  .featured-section { padding: 10px 0 70px; }
+  .featured-scroll-wrapper { padding: 0 16px; }
+  .product-card { flex-basis: min(76vw, 260px); }
+
+  .collections-grid { gap: 14px; }
+  .collection-card { padding: 6px; }
+  .collection-overlay { padding-bottom: 16px; }
+  .collection-overlay h3 { font-size: 22px; }
+
+  .insta-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+
+  .why-grid { gap: 16px; }
+  .why-item { padding: 24px 10px; }
+
+  .contact-wrapper { gap: 34px; }
+  .btn-send { width: 100%; align-self: stretch; padding: 15px; }
+  .contact-detail-item span { overflow-wrap: anywhere; }
+
+  .footer { padding: 0 16px 28px; }
+  .footer-grid { gap: 30px; }
+
+  .collection-modal-inner { padding: 88px 16px 48px; }
+  .collection-modal-header { margin-bottom: 32px; }
+  .collection-modal-title-row { align-items: flex-start; }
+  .modal-category-title { text-align: left; letter-spacing: 0.04em; }
+  .modal-back-btn { padding: 8px; }
+  .modal-back-btn span { display: none; }
+  .collection-modal-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .modal-product-card-info { padding: 16px 8px 4px; }
+  .modal-product-card-info h4 { font-size: 18px; }
+  .add-to-cart { width: calc(100% - 24px); margin: 12px 12px 14px; padding: 10px 4px; font-size: 10px; letter-spacing: 0.12em; }
+}
+
+@media (max-width: 360px) {
+  .collections-grid,
+  .collection-modal-grid { grid-template-columns: 1fr; }
+  .modal-category-title { font-size: 32px; }
+  .nav-brand { letter-spacing: 0.14em; }
+}
+
+/* ═══════════════════════════════════════════
+   REDUCED MOTION
+   Cursor glow + ambient pulse are disabled; the motif renders at a static,
+   slightly-raised opacity. All other animation collapses to an instant state.
+   ═══════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .reveal, .reveal-left, .reveal-right {
+    opacity: 1;
+    transform: none;
+  }
+
+  .heritage-bg { animation: none; }
+  .heritage-bg .motif-glow { display: none; }
+  .heritage-bg .motif-base {
+    opacity: calc(var(--rest-op, 0.07) + 0.06) !important;
+  }
+}

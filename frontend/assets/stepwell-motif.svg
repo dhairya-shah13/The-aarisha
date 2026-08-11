@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  AARISHA — Rani ki Vav monument line-art (master artwork)
+  Design system source of truth for the v3 "Heritage Gold & Forest" design
+  (see DESIGN.md). Pure monoline line art: stroke only, uniform stroke-width 1.5,
+  no fills. Strokes use currentColor so sections recolor the motif via CSS
+  (gold on forest grounds) — one artwork, zero duplicate assets per color.
+
+  Cultural note (DESIGN.md): abstracts the architecture of Rani ki Vav only —
+  the grand pavilion with cusped (festooned) arches, side jharokha arches,
+  colonnade band, niche rows, descending step levels, and the well shaft.
+  No figurative carving.
+
+  Consumption: this file is the canonical master. The page-level hidden sprite in
+  frontend/index.html / frontend/admin.html is generated from these same symbols
+  and must be kept in sync when this file changes (both edited in the same change).
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" aria-hidden="true">
+
+  <!-- Full composition: jharokha arches → pavilion with festooned arches →
+       colonnade → niche rows → descending step-lines → well shaft.
+       Symmetry axis x=600. -->
+  <symbol id="stepwell-motif" viewBox="0 0 1200 800">
+    <g stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none">
+
+      <!-- Register 4 — descending step-lines (V-narrowing toward the well) -->
+      <path d="M180 570 L1020 570"/>
+      <path d="M210 600 L990 600"/>
+      <path d="M240 630 L960 630"/>
+      <path d="M270 660 L930 660"/>
+      <path d="M180 570 L210 600 L240 630 L270 660 L300 690"/>
+      <path d="M1020 570 L990 600 L960 630 L930 660 L900 690"/>
+
+      <!-- Register 5 — the well shaft (focal point at the base) -->
+      <circle cx="600" cy="726" r="42"/>
+      <circle cx="600" cy="726" r="18"/>
+      <path d="M300 690 L562 726"/>
+      <path d="M900 690 L638 726"/>
+      <path d="M540 748 L660 748"/>
+
+      <!-- Base line spanning the composition -->
+      <path d="M130 700 L1070 700"/>
+
+      <!-- Register 1 — grand pavilion: outer arch, inner cusped arch, festoons -->
+      <path d="M400 280 C 400 130 480 80 600 80 C 720 80 800 130 800 280"/>
+      <path d="M470 280 C 470 175 520 140 600 140 C 680 140 730 175 730 280"/>
+      <path d="M470 122 q26 26 52 0"/>
+      <path d="M678 122 q26 26 52 0"/>
+      <path d="M570 104 q30 26 60 0"/>
+      <path d="M400 280 L400 350"/>
+      <path d="M800 280 L800 350"/>
+      <path d="M470 280 L470 350"/>
+      <path d="M730 280 L730 350"/>
+
+      <!-- Flanking pointed arches beside the pavilion -->
+      <path d="M320 300 C 320 200 340 165 360 155 C 380 165 400 200 400 300"/>
+      <path d="M335 300 C 335 220 350 195 360 188 C 370 195 385 220 385 300"/>
+      <path d="M800 300 C 800 200 820 165 840 155 C 860 165 880 200 880 300"/>
+      <path d="M815 300 C 815 220 830 195 840 188 C 850 195 865 220 865 300"/>
+      <path d="M320 300 L320 350"/>
+      <path d="M880 300 L880 350"/>
+
+      <!-- Pavilion lintel -->
+      <path d="M320 350 L880 350"/>
+
+      <!-- Side jharokha (mirrored arch) frames -->
+      <path d="M150 700 C 150 430 190 385 230 385 C 270 385 310 430 310 700"/>
+      <path d="M185 700 C 185 470 210 435 230 435 C 250 435 275 470 275 700"/>
+      <path d="M150 480 L310 480"/>
+      <path d="M150 480 L140 510"/>
+      <path d="M310 480 L320 510"/>
+      <path d="M890 700 C 890 430 930 385 970 385 C 1010 385 1050 430 1050 700"/>
+      <path d="M925 700 C 925 470 950 435 970 435 C 990 435 1015 470 1025 700"/>
+      <path d="M890 480 L1050 480"/>
+      <path d="M890 480 L880 510"/>
+      <path d="M1050 480 L1060 510"/>
+
+      <!-- Register 2 — colonnade band of small cusped arches -->
+      <path d="M320 450 L880 450"/>
+      <path d="M340 450 q20 -30 40 0"/>
+      <path d="M400 450 q20 -30 40 0"/>
+      <path d="M460 450 q20 -30 40 0"/>
+      <path d="M520 450 q20 -30 40 0"/>
+      <path d="M580 450 q20 -30 40 0"/>
+      <path d="M640 450 q20 -30 40 0"/>
+      <path d="M700 450 q20 -30 40 0"/>
+      <path d="M760 450 q20 -30 40 0"/>
+      <path d="M820 450 q20 -30 40 0"/>
+
+      <!-- Register 3 — niche rhythm (scalloped arch rows) -->
+      <path d="M328 520 q18 -26 36 0"/>
+      <path d="M400 520 q18 -26 36 0"/>
+      <path d="M472 520 q18 -26 36 0"/>
+      <path d="M544 520 q18 -26 36 0"/>
+      <path d="M616 520 q18 -26 36 0"/>
+      <path d="M688 520 q18 -26 36 0"/>
+      <path d="M760 520 q18 -26 36 0"/>
+      <path d="M832 520 q18 -26 36 0"/>
+
+      <!-- Lattice / geometric fill — sparse diamond fragments in the top corners.
+           Omitted from the #stepwell-motif-slim variant (hidden ≤768px). -->
+      <path d="M95 60 L110 75 L95 90 L80 75 Z"/>
+      <path d="M125 60 L140 75 L125 90 L110 75 Z"/>
+      <path d="M80 90 L95 105 L80 120 L65 105 Z"/>
+      <path d="M110 90 L125 105 L110 120 L95 105 Z"/>
+      <path d="M1105 60 L1090 75 L1105 90 L1120 75 Z"/>
+      <path d="M1075 60 L1060 75 L1075 90 L1090 75 Z"/>
+      <path d="M1120 90 L1105 105 L1120 120 L1135 105 Z"/>
+      <path d="M1090 90 L1075 105 L1090 120 L1105 105 Z"/>
+    </g>
+  </symbol>
+
+  <!-- Slim full composition: identical to #stepwell-motif minus the corner lattice.
+       Swapped in at ≤768px to reduce visual noise on narrow columns. -->
+  <symbol id="stepwell-motif-slim" viewBox="0 0 1200 800">
+    <g stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none">
+      <path d="M180 570 L1020 570"/>
+      <path d="M210 600 L990 600"/>
+      <path d="M240 630 L960 630"/>
+      <path d="M270 660 L930 660"/>
+      <path d="M180 570 L210 600 L240 630 L270 660 L300 690"/>
+      <path d="M1020 570 L990 600 L960 630 L930 660 L900 690"/>
+      <circle cx="600" cy="726" r="42"/>
+      <circle cx="600" cy="726" r="18"/>
+      <path d="M300 690 L562 726"/>
+      <path d="M900 690 L638 726"/>
+      <path d="M540 748 L660 748"/>
+      <path d="M130 700 L1070 700"/>
+      <path d="M400 280 C 400 130 480 80 600 80 C 720 80 800 130 800 280"/>
+      <path d="M470 280 C 470 175 520 140 600 140 C 680 140 730 175 730 280"/>
+      <path d="M470 122 q26 26 52 0"/>
+      <path d="M678 122 q26 26 52 0"/>
+      <path d="M570 104 q30 26 60 0"/>
+      <path d="M400 280 L400 350"/>
+      <path d="M800 280 L800 350"/>
+      <path d="M470 280 L470 350"/>
+      <path d="M730 280 L730 350"/>
+      <path d="M320 300 C 320 200 340 165 360 155 C 380 165 400 200 400 300"/>
+      <path d="M335 300 C 335 220 350 195 360 188 C 370 195 385 220 385 300"/>
+      <path d="M800 300 C 800 200 820 165 840 155 C 860 165 880 200 880 300"/>
+      <path d="M815 300 C 815 220 830 195 840 188 C 850 195 865 220 865 300"/>
+      <path d="M320 300 L320 350"/>
+      <path d="M880 300 L880 350"/>
+      <path d="M320 350 L880 350"/>
+      <path d="M150 700 C 150 430 190 385 230 385 C 270 385 310 430 310 700"/>
+      <path d="M185 700 C 185 470 210 435 230 435 C 250 435 275 470 275 700"/>
+      <path d="M150 480 L310 480"/>
+      <path d="M150 480 L140 510"/>
+      <path d="M310 480 L320 510"/>
+      <path d="M890 700 C 890 430 930 385 970 385 C 1010 385 1050 430 1050 700"/>
+      <path d="M925 700 C 925 470 950 435 970 435 C 990 435 1015 470 1025 700"/>
+      <path d="M890 480 L1050 480"/>
+      <path d="M890 480 L880 510"/>
+      <path d="M1050 480 L1060 510"/>
+      <path d="M320 450 L880 450"/>
+      <path d="M340 450 q20 -30 40 0"/>
+      <path d="M400 450 q20 -30 40 0"/>
+      <path d="M460 450 q20 -30 40 0"/>
+      <path d="M520 450 q20 -30 40 0"/>
+      <path d="M580 450 q20 -30 40 0"/>
+      <path d="M640 450 q20 -30 40 0"/>
+      <path d="M700 450 q20 -30 40 0"/>
+      <path d="M760 450 q20 -30 40 0"/>
+      <path d="M820 450 q20 -30 40 0"/>
+      <path d="M328 520 q18 -26 36 0"/>
+      <path d="M400 520 q18 -26 36 0"/>
+      <path d="M472 520 q18 -26 36 0"/>
+      <path d="M544 520 q18 -26 36 0"/>
+      <path d="M616 520 q18 -26 36 0"/>
+      <path d="M688 520 q18 -26 36 0"/>
+      <path d="M760 520 q18 -26 36 0"/>
+      <path d="M832 520 q18 -26 36 0"/>
+    </g>
+  </symbol>
+
+  <!-- Frieze slice — narrow horizontal crop of the step-line register, available
+       for tiling short sections so the motif reads as a continuous frieze. -->
+  <symbol id="stepwell-frieze" viewBox="0 0 1200 160">
+    <g stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none">
+      <path d="M180 40 L1020 40"/>
+      <path d="M210 70 L990 70"/>
+      <path d="M240 100 L960 100"/>
+      <path d="M270 130 L930 130"/>
+      <path d="M180 40 L210 70 L240 100 L270 130 L300 160"/>
+      <path d="M1020 40 L990 70 L960 100 L930 130 L900 160"/>
+    </g>
+  </symbol>
+
+  <!-- Shaft slice — the well-shaft register. -->
+  <symbol id="stepwell-shaft" viewBox="0 0 1200 160">
+    <g stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none">
+      <path d="M280 40 L920 40"/>
+      <path d="M305 40 L562 100"/>
+      <path d="M895 40 L638 100"/>
+      <circle cx="600" cy="100" r="38"/>
+      <circle cx="600" cy="100" r="17"/>
+      <path d="M540 130 L660 130"/>
+    </g>
+  </symbol>
+
+</svg>
